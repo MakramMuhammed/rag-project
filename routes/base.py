@@ -8,7 +8,7 @@ base_router = APIRouter(
 
 @base_router.get("/")
 
-def welcome_message():
+async def welcome_message(): # async is better for I/O bound operations, like database queries or network requests
     app_name = os.getenv("APP_NAME")
     app_version = os.getenv("APP_VERSION")
     return {"message": f"Welcome to the {app_name} API, version {app_version} in .env!"}
