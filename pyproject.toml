@@ -9,4 +9,7 @@ dependencies = [
     "uvicorn[standard]>=0.29.0",
     "python-multipart>=0.0.9",
     "python-dotenv>=1.0.1",
+    "pydantic_settings>=2.2.1",
+    "aiofiles>=25.1.0",
+    "regex>=2026.6.28",
 ]
