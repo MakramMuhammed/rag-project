@@ -1,6 +1,8 @@
-def main():
-    print("Hello from rag-project!")
+from fastapi import FastAPI
+app = FastAPI()
 
+@app.get("/welcome_message")
 
-if __name__ == "__main__":
-    main()
+def welcome_message():
+    return {"message": "Welcome to the RAG Project API!"}
+
