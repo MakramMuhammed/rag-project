@@ -4,9 +4,10 @@ from fastapi import FastAPI,APIRouter, Depends, UploadFile, status
 from fastapi.responses import JSONResponse
 from helpers.config import get_settings, Settings
 from controllers import DataController
-from controllers import ProjectController
+from controllers import ProjectController, ProcessController            
 import aiofiles
 from models.enums import ResponseSignal
+from .schemas.data import ProcessRequest
 
 
 data_router = APIRouter(
@@ -43,3 +44,41 @@ async def upload_file(project_id: str, file: UploadFile, settings: Settings = De
             content={"signal": ResponseSignal.FILE_UPLOAD_SUCCESS.value, "message": "File uploaded successfully.",
                      "file_id": file_id}
         )        
+
+@data_router.post("/process/{project_id}")
+async def process_endpoint(project_id: str, request: ProcessRequest):
+    process_controller = ProcessController(project_id=project_id)
+
+    file_content = process_controller.get_file_content(
+        file_id=request.file_id
+    )
+
+    file_chunks = process_controller.process_file_content(
+        file_content=file_content,
+        file_id=request.file_id,
+        chunk_size=request.chunk_size,
+        overlap_size=request.overlap_size,
+    )
+
+    if not file_chunks:
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={
+                "signal": ResponseSignal.FILE_PROCESSING_FAILED.value,
+                "message": "File processing failed.",
+            },
+        )
+
+    chunks_response = [
+        {
+            "page_content": chunk.page_content,
+            "metadata": chunk.metadata,
+        }
+        for chunk in file_chunks
+    ]
+
+    return {
+        "signal": ResponseSignal.FILE_PROCESSING_SUCCESS.value,
+        "message": "File processed successfully.",
+        "chunks": chunks_response,
+    }
